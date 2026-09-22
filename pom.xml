@@ -36,7 +36,6 @@
             <version>5.11.0</version>
             <scope>test</scope>
         </dependency>
-
         <!-- AssertJ -->
         <dependency>
             <groupId>org.assertj</groupId>
