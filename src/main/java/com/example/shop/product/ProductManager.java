@@ -6,32 +6,32 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ProductManager {
-    private final Map<Integer, Product> inventory = new ConcurrentHashMap<>();
+    private final Map<Integer, Product> productRepository = new ConcurrentHashMap<>();
 
     public void addProduct(Product product) {
         if (product == null) {
-            throw new IllegalArgumentException("Produkt nie może być nullem");
+            throw new IllegalArgumentException("Product cannot be null");
         }
-        if (inventory.containsKey(product.getId())) {
-            throw new IllegalArgumentException("Produkt o id " + product.getId() + " juz istnieje");
+        if (productRepository.containsKey(product.getId())) {
+            throw new IllegalArgumentException("Product with id: " + product.getId() + " already exists");
         }
-        inventory.put(product.getId(), product);
+        productRepository.put(product.getId(), product);
     }
 
     public Product getProductById(int id) {
-        if (!inventory.containsKey(id)) {
-            throw new IllegalArgumentException("Nie znaleziono produktu o ID: " + id);
+        if (!productRepository.containsKey(id)) {
+            throw new IllegalArgumentException("Couldn't find a product with id: " + id);
         }
-        return inventory.get(id);
+        return productRepository.get(id);
     }
 
     public List<Product> getAllProducts() {
-        return inventory.values().stream().toList();
+        return productRepository.values().stream().toList();
     }
 
     public void updateStock(int id, int newQuantity) {
         if (newQuantity < 0) {
-            throw new IllegalArgumentException("Ilosc na stanie nie moze byc ujemna");
+            throw new IllegalArgumentException("Stock quantity cannot be negative");
         }
 
         Product product = getProductById(id);
@@ -40,7 +40,7 @@ public class ProductManager {
 
     public void updatePrice(int id, BigDecimal newPrice) {
         if (newPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Cena nie moze byc ujemna");
+            throw new IllegalArgumentException("Price cannot be negative");
         }
 
         Product product = getProductById(id);
@@ -49,18 +49,18 @@ public class ProductManager {
 
     public void updateProduct(Product updatedProduct) {
         if (updatedProduct == null) {
-            throw new IllegalArgumentException("Produkt po aktualizacji nie może byc nullem");
+            throw new IllegalArgumentException("Updated product cannot be null");
         }
 
-        if (!inventory.containsKey(updatedProduct.getId())) {
-            throw new IllegalArgumentException("Nie ma produktu o id: " + updatedProduct.getId());
+        if (!productRepository.containsKey(updatedProduct.getId())) {
+            throw new IllegalArgumentException("There is no product with id: " + updatedProduct.getId());
         }
 
-        inventory.put(updatedProduct.getId(), updatedProduct);
+        productRepository.put(updatedProduct.getId(), updatedProduct);
     }
 
     public void removeProduct(int id) {
         getProductById(id);
-        inventory.remove(id);
+        productRepository.remove(id);
     }
 }

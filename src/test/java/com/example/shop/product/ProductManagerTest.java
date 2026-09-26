@@ -32,13 +32,13 @@ class ProductManagerTest {
     void shouldThrowExceptionWhenAddingDuplicateId() {
         //Arrange and act
         manager.addProduct(testProduct);
-        Electronics duplicateProduct = new Electronics(1, "Inne sluchawki", "JBL", new BigDecimal("200.00"), 5);
+        Electronics duplicateProduct = new Electronics(1, "Different headphones", "JBL", new BigDecimal("200.00"), 5);
 
         //Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
                 () -> manager.addProduct(duplicateProduct));
 
-        assertTrue(exception.getMessage().contains("juz istnieje"));
+        assertTrue(exception.getMessage().contains("exists"));
     }
 
     @Test
@@ -107,6 +107,6 @@ class ProductManagerTest {
                 () -> manager.updateProduct(phantomProduct));
 
         //Assert
-        assertTrue(exception.getMessage().contains("Nie ma"));
+        assertTrue(exception.getMessage().contains("is no"));
     }
 }
