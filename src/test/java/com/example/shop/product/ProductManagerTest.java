@@ -14,7 +14,7 @@ class ProductManagerTest {
 
     @BeforeEach
     void setUp() {
-        manager = new ProductManager();
+        manager = new ProductManager(new InMemoryProductRepository());
         testProduct = new Electronics(1, "Headphones", "Sony", new BigDecimal("300.00"), 10);
     }
 

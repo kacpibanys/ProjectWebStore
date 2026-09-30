@@ -1,5 +1,6 @@
 package com.example.shop.cart;
 
+import com.example.shop.product.InMemoryProductRepository;
 import com.example.shop.product.ProductManager;
 import com.example.shop.product.producttype.Computer;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +19,7 @@ class CartServiceTest {
 
     @BeforeEach
     void setUp() {
-        productManager = new ProductManager();
+        productManager = new ProductManager(new InMemoryProductRepository());
         cart = new Cart();
         cartService = new CartService(productManager, cart);
 

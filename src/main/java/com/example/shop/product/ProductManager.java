@@ -1,32 +1,34 @@
 package com.example.shop.product;
 
+
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ProductManager {
-    private final Map<Integer, Product> productRepository = new ConcurrentHashMap<>();
+    private final ProductRepository productRepository;
+
+    public ProductManager(ProductRepository productRepository) {
+        this.productRepository = productRepository;
+    }
 
     public void addProduct(Product product) {
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null");
         }
-        if (productRepository.containsKey(product.getId())) {
+        if (productRepository.existsById(product.getId())) {
             throw new IllegalArgumentException("Product with id: " + product.getId() + " already exists");
         }
-        productRepository.put(product.getId(), product);
+        productRepository.addProduct(product);
     }
 
     public Product getProductById(int id) {
-        if (!productRepository.containsKey(id)) {
-            throw new IllegalArgumentException("Couldn't find a product with id: " + id);
-        }
-        return productRepository.get(id);
+        return productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Couldn't find a product with id: " + id));
+
     }
 
     public List<Product> getAllProducts() {
-        return productRepository.values().stream().toList();
+        return productRepository.findAll();
     }
 
     public void updateStock(int id, int newQuantity) {
@@ -36,6 +38,7 @@ public class ProductManager {
 
         Product product = getProductById(id);
         product.setAvailableQuantity(newQuantity);
+        productRepository.updateProduct(product);
     }
 
     public void updatePrice(int id, BigDecimal newPrice) {
@@ -45,6 +48,7 @@ public class ProductManager {
 
         Product product = getProductById(id);
         product.setPrice(newPrice);
+        productRepository.updateProduct(product);
     }
 
     public void updateProduct(Product updatedProduct) {
@@ -52,15 +56,15 @@ public class ProductManager {
             throw new IllegalArgumentException("Updated product cannot be null");
         }
 
-        if (!productRepository.containsKey(updatedProduct.getId())) {
+        if (!productRepository.existsById(updatedProduct.getId())){
             throw new IllegalArgumentException("There is no product with id: " + updatedProduct.getId());
         }
 
-        productRepository.put(updatedProduct.getId(), updatedProduct);
+        productRepository.updateProduct(updatedProduct);
     }
 
     public void removeProduct(int id) {
         getProductById(id);
-        productRepository.remove(id);
+        productRepository.removeProduct(id);
     }
 }
