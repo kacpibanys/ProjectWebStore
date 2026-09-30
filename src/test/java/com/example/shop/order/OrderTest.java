@@ -26,7 +26,7 @@ class OrderTest {
         LocalDateTime now = LocalDateTime.now();
 
         //Act
-        Order order = new Order(1, customer, items, new BigDecimal("6000.00"), now);
+        Order order = new Order(1, customer, items, new BigDecimal("6000.00"), OrderStatus.NEW, now);
 
         //Assert
         assertEquals(1, order.getId());
