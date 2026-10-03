@@ -61,4 +61,8 @@ public class CartService {
         return totalToPay;
     }
 
+    public Map<Product, Integer> getCartItems() {
+        return cart.getItems();
+    }
+
 }
