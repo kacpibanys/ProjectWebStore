@@ -1,5 +1,7 @@
 package com.example.shop.cart;
 
+import com.example.shop.exceptions.EmptyCartException;
+import com.example.shop.exceptions.OutOfStockException;
 import com.example.shop.product.Product;
 import com.example.shop.product.ProductManager;
 
@@ -32,7 +34,7 @@ public class CartService {
     public BigDecimal checkoutCart() {
         Map<Product, Integer> items = cart.getItems();
         if (items.isEmpty()) {
-            throw new IllegalStateException("Cannot checkout an empty cart");
+            throw new EmptyCartException("Cannot checkout an empty cart");
         }
 
         for (Map.Entry<Product, Integer> entry : items.entrySet()) {
@@ -41,7 +43,7 @@ public class CartService {
 
             Product productFromInventory = productManager.getProductById(productInCart.getId());
             if (productFromInventory.getAvailableQuantity() < requestedQuantity) {
-                throw new IllegalStateException("We don't have enough quantity of: " + productFromInventory.getName());
+                throw new OutOfStockException("We don't have enough quantity of: " + productFromInventory.getName());
             }
         }
 

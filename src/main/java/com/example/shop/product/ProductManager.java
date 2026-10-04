@@ -1,6 +1,8 @@
 package com.example.shop.product;
 
 
+import com.example.shop.exceptions.ProductNotFoundException;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -23,7 +25,7 @@ public class ProductManager {
 
     public Product getProductById(int id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Couldn't find a product with id: " + id));
+                .orElseThrow(() -> new ProductNotFoundException("Couldn't find a product with id: " + id));
 
     }
 

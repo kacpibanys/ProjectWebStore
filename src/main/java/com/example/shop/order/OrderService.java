@@ -1,5 +1,6 @@
 package com.example.shop.order;
 
+import com.example.shop.exceptions.InvalidOrderStatusException;
 import com.example.shop.invoice.Invoice;
 
 public class OrderService {
@@ -11,7 +12,7 @@ public class OrderService {
 
     public void processOrder(Order order) {
         if(order.getStatus() != OrderStatus.NEW) {
-            throw new IllegalStateException("Only NEW orders can be processed. Current status is " + order.getStatus());
+            throw new InvalidOrderStatusException("Only NEW orders can be processed. Current status is " + order.getStatus());
         }
 
         order.setStatus(OrderStatus.PROCESSING);
