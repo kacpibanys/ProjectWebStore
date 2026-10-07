@@ -24,7 +24,7 @@ public class OrderService {
         }
 
         order.setStatus(OrderStatus.PROCESSING);
-
+        simulateLongOrderProcessing();
         Invoice invoice = generateInvoice(order);
         order.setStatus(OrderStatus.COMPLETED);
 
@@ -40,5 +40,13 @@ public class OrderService {
 
     public Invoice generateInvoice(Order order) {
         return new Invoice(order);
+    }
+
+    private void simulateLongOrderProcessing() {
+        try {
+            Thread.sleep(150);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
