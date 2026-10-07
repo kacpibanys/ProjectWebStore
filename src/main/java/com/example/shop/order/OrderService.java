@@ -4,9 +4,15 @@ import com.example.shop.exceptions.InvalidOrderStatusException;
 import com.example.shop.file.FileSavingService;
 import com.example.shop.invoice.Invoice;
 
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class OrderService {
     private final OrderRepository orderRepository;
     private final FileSavingService fileSavingService;
+    private final ExecutorService executor = Executors.newFixedThreadPool(10);
 
     public OrderService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
@@ -34,8 +40,10 @@ public class OrderService {
             orderRepository.addOrder(order);
         }
 
-        fileSavingService.saveInvoiceAsText(invoice);
-        fileSavingService.appendOrderToLog(order);
+        if (fileSavingService != null) {
+            fileSavingService.saveInvoiceAsText(invoice);
+            fileSavingService.appendOrderToLog(order);
+        }
     }
 
     public Invoice generateInvoice(Order order) {
@@ -48,5 +56,14 @@ public class OrderService {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+    public void processOrdersSync(List<Order> orders) {
+        orders.forEach(this::processOrder);
+    }
+    public void processOrdersAsync(List<Order> orders) {
+        List<CompletableFuture<Void>> futures = orders.stream()
+                .map(order -> CompletableFuture.runAsync(() -> processOrder(order), executor))
+                .toList();
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
     }
 }
