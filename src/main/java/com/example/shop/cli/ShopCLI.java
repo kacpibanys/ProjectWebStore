@@ -5,6 +5,7 @@ import com.example.shop.customer.Customer;
 import com.example.shop.order.Order;
 import com.example.shop.order.OrderService;
 import com.example.shop.order.OrderStatus;
+import com.example.shop.product.Product;
 import com.example.shop.product.ProductManager;
 import com.example.shop.product.components.DiskSize;
 import com.example.shop.product.components.RamSize;
@@ -21,6 +22,7 @@ import com.example.shop.product.producttype.Smartphone;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class ShopCLI {
@@ -92,7 +94,7 @@ public class ShopCLI {
         System.out.print("Is it Dual SIM? (y/n): ");
         boolean isDualSim = scanner.nextLine().trim().equalsIgnoreCase("y");
 
-        // 5. Accessories (wiele opcji)
+
         List<Accessory> selectedAccessories = new ArrayList<>();
         Accessory[] accessories = Accessory.values();
         boolean addingAccessories = true;
@@ -163,13 +165,33 @@ public class ShopCLI {
 
     private void checkoutAndProcessOrder() {
         System.out.println("\nCHECKOUT");
-        BigDecimal totalToPay = cartService.checkoutCart();
+        BigDecimal baseTotal = cartService.calculateBaseTotal();
+
+        if (baseTotal.compareTo(BigDecimal.ZERO) == 0) {
+            System.out.println("Cart is empty.");
+            return;
+        }
+        System.out.print("Enter promo code (or press ENTER to skip): ");
+        String promoCode = scanner.nextLine();
+
+        if (!promoCode.isBlank()) {
+            boolean discountApplied = cartService.applyPromoCode(promoCode);
+            if (discountApplied) {
+                System.out.println("Promo code applied successfully!");
+            } else {
+                System.out.println("Invalid promo code.");
+            }
+        }
+
+        Map<Product, Integer> itemsForOrder =  new java.util.HashMap<>(cartService.getCartItems());
+
+        BigDecimal finalToPay = cartService.calculateFinalTotal();
 
         Order order = new Order(
                 orderCounter++,
                 loggedCustomer,
-                new java.util.HashMap<>(),
-                totalToPay,
+                itemsForOrder,
+                finalToPay,
                 OrderStatus.NEW,
                 java.time.LocalDateTime.now()
         );
