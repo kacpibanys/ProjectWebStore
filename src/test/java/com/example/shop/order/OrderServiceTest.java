@@ -1,6 +1,7 @@
 package com.example.shop.order;
 
 import com.example.shop.customer.Customer;
+import com.example.shop.exceptions.InvalidOrderStatusException;
 import com.example.shop.invoice.Invoice;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ class OrderServiceTest {
         testOrder.setStatus(OrderStatus.CANCELLED);
 
         //Act
-        IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
+        InvalidOrderStatusException exception = assertThrows(InvalidOrderStatusException.class, () -> {
             orderService.processOrder(testOrder);
         });
 

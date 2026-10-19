@@ -3,6 +3,7 @@ package com.example.shop.cli;
 import com.example.shop.cart.CartService;
 import com.example.shop.customer.Customer;
 import com.example.shop.order.Order;
+import com.example.shop.order.OrderProcessor;
 import com.example.shop.order.OrderService;
 import com.example.shop.order.OrderStatus;
 import com.example.shop.product.Product;
@@ -20,26 +21,32 @@ import com.example.shop.product.producttype.ComputerType;
 import com.example.shop.product.producttype.Smartphone;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class ShopCLI {
     private final ProductManager productManager;
     private final CartService cartService;
-    private final OrderService orderService;
+    private final OrderProcessor orderService;
     private final Customer loggedCustomer;
     private final Scanner scanner;
+
+    private final Map<String, Command> commands = new HashMap<>();
     private int orderCounter = 1;
     private int customProductIdCounter = 9000;
 
-    public ShopCLI(ProductManager productManager, CartService cartService, OrderService orderService, Customer loggedCustomer) {
+    public ShopCLI(ProductManager productManager, CartService cartService, OrderProcessor orderService, Customer loggedCustomer) {
         this.productManager = productManager;
         this.cartService = cartService;
         this.orderService = orderService;
         this.loggedCustomer = loggedCustomer;
         this.scanner = new Scanner(System.in);
+
+        commands.put("1", this::showProducts);
+        commands.put("2", this::addProductToCart);
+        commands.put("3", this::checkoutAndProcessOrder);
+        commands.put("4", this::viewCart);
+        commands.put("5", this::configureComputer);
+        commands.put("6", this::configureSmartphone);
     }
 
     public void start() {
@@ -51,19 +58,18 @@ public class ShopCLI {
             System.out.print("Choose an option: ");
             String input = scanner.nextLine();
 
+            if (input.equals("0")) {
+                System.out.println("Thank you for shopping");
+                running = false;
+                continue;
+            }
+
             try {
-                switch (input) {
-                    case "1" -> showProducts();
-                    case "2" -> addProductToCart();
-                    case "3" -> checkoutAndProcessOrder();
-                    case "4" -> viewCart();
-                    case "5" -> configureComputer();
-                    case "6" -> configureSmartphone();
-                    case "0" -> {
-                        System.out.println("Thank you for shopping");
-                        running = false;
-                    }
-                    default -> System.out.println("Unknown operation, try again. \n");
+                Command command = commands.get(input);
+                if (command != null) {
+                    command.execute();
+                } else {
+                    System.out.println("Unknown operation, try again. \n");
                 }
             } catch (Exception e) {
                 System.out.println("ERROR: " + e.getMessage() +"\n");
@@ -117,7 +123,7 @@ public class ShopCLI {
         }
 
         String customName = "Custom Smartphone (" + model + " - " + color + ")";
-        BigDecimal customPrice = new BigDecimal("5500.00"); // Bazowa cena
+        BigDecimal customPrice = new BigDecimal("5500.00");
 
         Smartphone customPhone = new Smartphone(
                 customProductIdCounter++,

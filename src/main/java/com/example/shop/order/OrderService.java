@@ -9,19 +9,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class OrderService {
+public class OrderService implements OrderProcessor {
     private final OrderRepository orderRepository;
-    private final FileSavingService fileSavingService;
+    private final EventBus eventBus;
     private final ExecutorService executor = Executors.newFixedThreadPool(10);
 
     public OrderService(OrderRepository orderRepository) {
         this.orderRepository = orderRepository;
-        this.fileSavingService = null;
+        this.eventBus = new EventBus();
     }
 
-    public OrderService(OrderRepository orderRepository, FileSavingService fileSavingService) {
+    public OrderService(OrderRepository orderRepository, EventBus eventBus) {
         this.orderRepository = orderRepository;
-        this.fileSavingService = fileSavingService;
+        this.eventBus = eventBus;
     }
 
     public void processOrder(Order order) {
@@ -29,10 +29,15 @@ public class OrderService {
             throw new InvalidOrderStatusException("Only NEW orders can be processed. Current status is " + order.getStatus());
         }
 
+        OrderStatus oldStatus = order.getStatus();
         order.setStatus(OrderStatus.PROCESSING);
+        eventBus.publish(new OrderStatusChangedEvent(order, oldStatus, OrderStatus.PROCESSING));
+
         simulateLongOrderProcessing();
         Invoice invoice = generateInvoice(order);
+
         order.setStatus(OrderStatus.COMPLETED);
+        eventBus.publish(new OrderStatusChangedEvent(order, OrderStatus.PROCESSING, OrderStatus.COMPLETED));
 
         if (orderRepository.existsById(order.getId())) {
             orderRepository.updateOrder(order);
@@ -40,10 +45,7 @@ public class OrderService {
             orderRepository.addOrder(order);
         }
 
-        if (fileSavingService != null) {
-            fileSavingService.saveInvoiceAsText(invoice);
-            fileSavingService.appendOrderToLog(order);
-        }
+        eventBus.publish(new OrderCompletedEvent(order, invoice));
     }
 
     public Invoice generateInvoice(Order order) {

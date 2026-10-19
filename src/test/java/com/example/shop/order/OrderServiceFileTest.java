@@ -27,8 +27,13 @@ public class OrderServiceFileTest {
     void shouldProcessOrderAndSaveDataToCsvFile() throws IOException {
         //Arrange
         OrderRepository orderRepository = new InMemoryOrderRepository();
+        EventBus eventBus = new EventBus();
         FileSavingService fileService = new FileSavingService();
-        OrderService orderService = new OrderService(orderRepository, fileService);
+        eventBus.subscribe(OrderCompletedEvent.class, event -> {
+            fileService.appendOrderToLog(event.order());
+        });
+
+        OrderService orderService = new OrderService(orderRepository, eventBus);
 
         Customer testCustomer = new Customer(99, "Jan", "Niezbedny", "jan@czysty.com");
 
