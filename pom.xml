@@ -23,7 +23,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Lombok -->
+        <!-- AssertJ -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
