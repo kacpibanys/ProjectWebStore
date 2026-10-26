@@ -6,6 +6,7 @@ import com.example.shop.product.components.RamSize;
 import com.example.shop.product.components.gpu.Gpu;
 import com.example.shop.product.components.processor.Processor;
 import com.example.shop.product.components.screen.ScreenSize;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,9 +16,11 @@ import java.math.BigDecimal;
 @Setter
 public class Computer extends Product {
     private ComputerType type;
+    @Setter(AccessLevel.NONE)
     private Processor processor;
     private RamSize ramSize;
     private DiskSize diskSize;
+    @Setter(AccessLevel.NONE)
     private Gpu gpu;
     private ScreenSize screenSize;
 

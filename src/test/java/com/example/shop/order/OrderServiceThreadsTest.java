@@ -4,6 +4,8 @@ import com.example.shop.customer.Customer;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +19,8 @@ public class OrderServiceThreadsTest {
     void asyncShouldBeFasterThanSync(){
         //Arrange
         OrderRepository orderRepository = new InMemoryOrderRepository();
-        OrderService orderService = new OrderService(orderRepository);
+        Clock clock = Clock.systemUTC();
+        OrderService orderService = new OrderService(orderRepository, clock);
 
         int orderCount = 100;
         List<Order> syncOrders = generateTestOrders(orderCount, 1000);
@@ -44,7 +47,7 @@ public class OrderServiceThreadsTest {
     private List<Order> generateTestOrders(int count, int startId) {
         List<Order> orders = new ArrayList<>();
         Customer testCustomer = new Customer(1, "Test", "Szefu", "test@szefu.com");
-
+        Clock clock = Clock.systemUTC();
         for (int i = 0; i < count; i++) {
             orders.add(new Order(
                     startId + i,
@@ -52,7 +55,7 @@ public class OrderServiceThreadsTest {
                     new HashMap<>(),
                     new BigDecimal("199.99"),
                     OrderStatus.NEW,
-                    LocalDateTime.now()
+                    Instant.now(clock)
             ));
         }
         return orders;

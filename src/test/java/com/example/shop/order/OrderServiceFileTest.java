@@ -10,13 +10,15 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OrderServiceFileTest {
-    private final Path csvPath = Paths.get("orders_log.csv");
+    private final Path csvPath = Paths.get("data", "orders_log.csv");
 
     @AfterEach
     void clearFiles() throws IOException {
@@ -26,14 +28,15 @@ public class OrderServiceFileTest {
     @Test
     void shouldProcessOrderAndSaveDataToCsvFile() throws IOException {
         //Arrange
+
         OrderRepository orderRepository = new InMemoryOrderRepository();
         EventBus eventBus = new EventBus();
-        FileSavingService fileService = new FileSavingService();
+        FileSavingService fileService = new FileSavingService("data");
         eventBus.subscribe(OrderCompletedEvent.class, event -> {
             fileService.appendOrderToLog(event.order());
         });
-
-        OrderService orderService = new OrderService(orderRepository, eventBus);
+        Clock clock = Clock.systemUTC();
+        OrderService orderService = new OrderService(orderRepository, eventBus, clock);
 
         Customer testCustomer = new Customer(99, "Jan", "Niezbedny", "jan@czysty.com");
 
@@ -43,7 +46,7 @@ public class OrderServiceFileTest {
                 new HashMap<>(),
                 new BigDecimal("999.50"),
                 OrderStatus.NEW,
-                LocalDateTime.now()
+                Instant.now(clock)
         );
 
         //Act

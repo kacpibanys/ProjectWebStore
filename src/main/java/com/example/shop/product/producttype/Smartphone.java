@@ -32,8 +32,14 @@ public class Smartphone extends Product {
         this.batteryCapacity = batteryCapacity;
         this.isDualSim = isDualSim;
         if (accessories != null) {
-            this.accessories.addAll(accessories);
+            this.accessories = new ArrayList<>(accessories);
+        } else {
+            this.accessories = new ArrayList<>();
         }
+    }
+
+    public List<Accessory> getAccessories() {
+        return List.copyOf(this.accessories);
     }
 
 }

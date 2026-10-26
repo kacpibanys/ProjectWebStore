@@ -1,6 +1,10 @@
 package com.example.shop.cart;
 
+import com.example.shop.discount.DiscountStrategy;
+import com.example.shop.discount.NoDiscount;
 import com.example.shop.product.Product;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -10,6 +14,9 @@ import java.util.Objects;
 
 public class Cart {
     private final Map<Product, Integer> items = new HashMap<>();
+    @Getter
+    @Setter
+    private DiscountStrategy discountStrategy = new NoDiscount();
 
     public void addProduct(Product product, int quantity) {
         Objects.requireNonNull(product, "Product cannot be null");
@@ -45,12 +52,18 @@ public class Cart {
 
     public void clear() {
         items.clear();
+        this.discountStrategy = new NoDiscount();
     }
 
 
-    public void validateQuantity(int quantity) {
+    private void validateQuantity(int quantity) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("quantity must be positive");
         }
     }
+
+    public int getProductQuantity(Product product) {
+        return items.getOrDefault(product, 0);
+    }
+
 }

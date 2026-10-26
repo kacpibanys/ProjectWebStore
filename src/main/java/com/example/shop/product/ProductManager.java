@@ -1,6 +1,7 @@
 package com.example.shop.product;
 
 
+import com.example.shop.exceptions.OutOfStockException;
 import com.example.shop.exceptions.ProductNotFoundException;
 
 import java.math.BigDecimal;
@@ -45,7 +46,7 @@ public class ProductManager {
 
     public void updatePrice(int id, BigDecimal newPrice) {
         if (newPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Price cannot be negative");
+            throw new IllegalArgumentException("Price must be greater than zero");
         }
 
         Product product = getProductById(id);
@@ -59,7 +60,7 @@ public class ProductManager {
         }
 
         if (!productRepository.existsById(updatedProduct.getId())){
-            throw new IllegalArgumentException("There is no product with id: " + updatedProduct.getId());
+            throw new ProductNotFoundException("Couldn't find a product with id: " + updatedProduct.getId());
         }
 
         productRepository.updateProduct(updatedProduct);
@@ -68,5 +69,15 @@ public class ProductManager {
     public void removeProduct(int id) {
         getProductById(id);
         productRepository.removeProduct(id);
+    }
+
+    public synchronized void decreaseStock(int productId, int quantity) {
+        Product product = getProductById(productId);
+        if (product.getAvailableQuantity() < quantity) {
+            throw new OutOfStockException("there is not enough of this product in stock");
+        }
+
+        int newQuantity = product.getAvailableQuantity() - quantity;
+        product.setAvailableQuantity(newQuantity);
     }
 }

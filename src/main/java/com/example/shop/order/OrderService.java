@@ -4,6 +4,7 @@ import com.example.shop.exceptions.InvalidOrderStatusException;
 import com.example.shop.file.FileSavingService;
 import com.example.shop.invoice.Invoice;
 
+import java.time.Clock;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -12,16 +13,20 @@ import java.util.concurrent.Executors;
 public class OrderService implements OrderProcessor {
     private final OrderRepository orderRepository;
     private final EventBus eventBus;
+    private final Clock clock;
     private final ExecutorService executor = Executors.newFixedThreadPool(10);
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, Clock clock) {
         this.orderRepository = orderRepository;
         this.eventBus = new EventBus();
+        this.clock = clock;
     }
 
-    public OrderService(OrderRepository orderRepository, EventBus eventBus) {
+    public OrderService(OrderRepository orderRepository, EventBus eventBus, Clock clock) {
         this.orderRepository = orderRepository;
         this.eventBus = eventBus;
+        this.clock = clock;
+
     }
 
     public void processOrder(Order order) {
@@ -49,7 +54,7 @@ public class OrderService implements OrderProcessor {
     }
 
     public Invoice generateInvoice(Order order) {
-        return new Invoice(order);
+        return new Invoice(order, clock);
     }
 
     private void simulateLongOrderProcessing() {

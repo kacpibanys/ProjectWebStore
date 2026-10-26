@@ -21,6 +21,8 @@ import com.example.shop.product.producttype.ComputerType;
 import com.example.shop.product.producttype.Smartphone;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.*;
 
 public class ShopCLI {
@@ -28,17 +30,19 @@ public class ShopCLI {
     private final CartService cartService;
     private final OrderProcessor orderService;
     private final Customer loggedCustomer;
+    private final Clock clock;
     private final Scanner scanner;
 
     private final Map<String, Command> commands = new HashMap<>();
     private int orderCounter = 1;
     private int customProductIdCounter = 9000;
 
-    public ShopCLI(ProductManager productManager, CartService cartService, OrderProcessor orderService, Customer loggedCustomer) {
+    public ShopCLI(ProductManager productManager, CartService cartService, OrderProcessor orderService, Customer loggedCustomer, Clock clock) {
         this.productManager = productManager;
         this.cartService = cartService;
         this.orderService = orderService;
         this.loggedCustomer = loggedCustomer;
+        this.clock = clock;
         this.scanner = new Scanner(System.in);
 
         commands.put("1", this::showProducts);
@@ -191,7 +195,7 @@ public class ShopCLI {
 
         Map<Product, Integer> itemsForOrder =  new java.util.HashMap<>(cartService.getCartItems());
 
-        BigDecimal finalToPay = cartService.calculateFinalTotal();
+        BigDecimal finalToPay = cartService.checkoutCart();
 
         Order order = new Order(
                 orderCounter++,
@@ -199,7 +203,7 @@ public class ShopCLI {
                 itemsForOrder,
                 finalToPay,
                 OrderStatus.NEW,
-                java.time.LocalDateTime.now()
+                Instant.now(clock)
         );
 
         orderService.processOrder(order);

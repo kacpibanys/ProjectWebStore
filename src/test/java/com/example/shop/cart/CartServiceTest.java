@@ -1,5 +1,9 @@
 package com.example.shop.cart;
 
+import com.example.shop.discount.FixedAmountDiscount;
+import com.example.shop.discount.PercentageDiscount;
+import com.example.shop.discount.PromoCodeService;
+import com.example.shop.exceptions.OutOfStockException;
 import com.example.shop.product.InMemoryProductRepository;
 import com.example.shop.product.ProductManager;
 import com.example.shop.product.producttype.Computer;
@@ -21,7 +25,12 @@ class CartServiceTest {
     void setUp() {
         productManager = new ProductManager(new InMemoryProductRepository());
         cart = new Cart();
-        cartService = new CartService(productManager, cart);
+
+        PromoCodeService promoCodeService = new PromoCodeService();
+        promoCodeService.addPromoCode("STUDENT10", new PercentageDiscount(new BigDecimal("10")));
+        promoCodeService.addPromoCode("MINUS50", new FixedAmountDiscount(new BigDecimal("50.00")));
+
+        cartService = new CartService(productManager, cart, promoCodeService);
 
         laptop = new Computer(1, "ThinkPad", "Lenovo", new BigDecimal("3000.00"), 5);
         productManager.addProduct(laptop);
@@ -39,7 +48,7 @@ class CartServiceTest {
     @Test
     void shouldThrowExceptionWhenAddingMoreThanAvailableStock() {
         //Act and Assert
-        assertThrows(IllegalArgumentException.class, () -> cartService.addProductToCart(1, 10));
+        assertThrows(OutOfStockException.class, () -> cartService.addProductToCart(1, 10));
     }
 
     @Test
@@ -75,7 +84,7 @@ class CartServiceTest {
         productManager.updateStock(1, 2);
 
         //Act and Assert
-        assertThrows(IllegalStateException.class, () -> cartService.checkoutCart());
+        assertThrows(OutOfStockException.class, () -> cartService.checkoutCart());
         assertEquals(2, productManager.getProductById(1).getAvailableQuantity());
         assertFalse(cart.getItems().isEmpty());
     }

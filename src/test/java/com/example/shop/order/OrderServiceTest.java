@@ -7,6 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
@@ -21,11 +23,12 @@ class OrderServiceTest {
     @BeforeEach
     void setUp() {
         orderRepository = new InMemoryOrderRepository();
-        orderService = new OrderService(orderRepository);
+        Clock clock = Clock.systemUTC();
+        orderService = new OrderService(orderRepository, clock);
 
         Customer customer = new Customer(1, "Kacper", "Banys", "kacper@gmail.com");
 
-        testOrder = new Order(1, customer, new HashMap<>(), new BigDecimal("6000.00"), OrderStatus.NEW, LocalDateTime.now());
+        testOrder = new Order(1, customer, new HashMap<>(), new BigDecimal("6000.00"), OrderStatus.NEW, Instant.now(clock));
     }
 
     @Test

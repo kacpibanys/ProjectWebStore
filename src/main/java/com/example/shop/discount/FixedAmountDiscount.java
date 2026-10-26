@@ -8,7 +8,7 @@ public class FixedAmountDiscount implements DiscountStrategy {
 
     public FixedAmountDiscount(BigDecimal discountAmount) {
         if (discountAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Kwota rabatu nie może być ujemna");
+            throw new IllegalArgumentException("Discount cannot be negative");
         }
         this.discountAmount = discountAmount;
     }

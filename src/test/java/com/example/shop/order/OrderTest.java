@@ -6,6 +6,8 @@ import com.example.shop.product.producttype.Computer;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,16 +25,16 @@ class OrderTest {
         Map<Product, Integer> items = new HashMap<>();
         items.put(laptop, 2);
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant orderTime = Instant.now(Clock.systemUTC());
 
         //Act
-        Order order = new Order(1, customer, items, new BigDecimal("6000.00"), OrderStatus.NEW, now);
+        Order order = new Order(1, customer, items, new BigDecimal("6000.00"), OrderStatus.NEW, orderTime);
 
         //Assert
         assertEquals(1, order.getId());
         assertEquals(customer, order.getCustomer());
         assertEquals(1, order.getItems().size());
         assertEquals(new BigDecimal("6000.00"), order.getTotalPrice());
-        assertEquals(now, order.getCreatedAt());
+        assertEquals(orderTime, order.getCreatedAt());
     }
 }

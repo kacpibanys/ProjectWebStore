@@ -71,8 +71,8 @@ class SmartphoneTest {
         phone.configureSmartphone("8 Pro", "White", DiskSize.GB_128, 4500, true, List.of(CASE));
 
         // Assert
-        assertEquals(2, phone.getAccessories().size());
-        assertTrue(phone.getAccessories().contains(CHARGER));
+        assertEquals(1, phone.getAccessories().size());
+        assertFalse(phone.getAccessories().contains(CHARGER));
         assertTrue(phone.getAccessories().contains(CASE));
     }
 }

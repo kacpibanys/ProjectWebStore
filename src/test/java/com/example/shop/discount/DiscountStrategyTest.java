@@ -10,7 +10,7 @@ class DiscountStrategyTest {
     @Test
     void percentageDiscountShouldReducePriceCorrectly() {
         //arrange
-        DiscountStrategy discount = new PercentageDiscount(20);
+        DiscountStrategy discount = new PercentageDiscount(new BigDecimal("20.00"));
         BigDecimal originalPrice = new BigDecimal("100.00");
 
         //Act

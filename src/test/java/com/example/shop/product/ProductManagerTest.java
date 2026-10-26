@@ -1,5 +1,6 @@
 package com.example.shop.product;
 
+import com.example.shop.exceptions.ProductNotFoundException;
 import com.example.shop.product.producttype.Electronics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,13 +73,13 @@ class ProductManagerTest {
         manager.removeProduct(1);
 
         //Assert
-        assertThrows(IllegalArgumentException.class, () -> manager.getProductById(1));
+        assertThrows(ProductNotFoundException.class, () -> manager.getProductById(1));
     }
 
     @Test
     void shouldThrowExceptionWhenGettingNonExistentProduct() {
         //Assert
-        assertThrows(IllegalArgumentException.class, () -> manager.getProductById(999));
+        assertThrows(ProductNotFoundException.class, () -> manager.getProductById(999));
     }
 
     @Test
@@ -103,10 +104,10 @@ class ProductManagerTest {
         Electronics phantomProduct = new Electronics(999, "Atrapa", "Noname", new BigDecimal("10.00"), 1);
 
         //Act
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+        ProductNotFoundException exception = assertThrows(ProductNotFoundException.class,
                 () -> manager.updateProduct(phantomProduct));
 
         //Assert
-        assertTrue(exception.getMessage().contains("is no"));
+        assertTrue(exception.getMessage().contains("Couldn't find a product"));
     }
 }

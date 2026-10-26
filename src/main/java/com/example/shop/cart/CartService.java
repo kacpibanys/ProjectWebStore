@@ -1,8 +1,6 @@
 package com.example.shop.cart;
 
-import com.example.shop.discount.DiscountStrategy;
-import com.example.shop.discount.FixedAmountDiscount;
-import com.example.shop.discount.PercentageDiscount;
+import com.example.shop.discount.*;
 import com.example.shop.exceptions.EmptyCartException;
 import com.example.shop.exceptions.OutOfStockException;
 import com.example.shop.product.Product;
@@ -15,22 +13,21 @@ import java.util.Map;
 public class CartService {
     private final ProductManager productManager;
     private final Cart cart;
-    private final Map<String, DiscountStrategy> promoCodes = new HashMap<>();
-    private DiscountStrategy activeDiscount = null;
+    private final PromoCodeService promoCodeService;
 
-    public CartService(ProductManager productManager, Cart cart) {
+    public CartService(ProductManager productManager, Cart cart, PromoCodeService promoCodeService) {
         this.productManager = productManager;
         this.cart = cart;
-        promoCodes.put("STUDENT20", new PercentageDiscount(20));
-        promoCodes.put("MINUS50", new FixedAmountDiscount(new BigDecimal("50.00")));
+        this.promoCodeService = promoCodeService;
     }
 
     public void addProductToCart(int productId, int quantity) {
         Product product = productManager.getProductById(productId);
-        if (product.getAvailableQuantity() < quantity) {
-            throw new IllegalArgumentException("there are not enough products in this shop");
-        }
+        int quantityAlreadyInCart = cart.getProductQuantity(product);
 
+        if (product.getAvailableQuantity() < (quantity + quantityAlreadyInCart) ) {
+            throw new OutOfStockException("there are not enough products in this shop");
+        }
         cart.addProduct(product, quantity);
     }
 
@@ -46,20 +43,10 @@ public class CartService {
         }
 
         items.forEach((productInCart, requestedQuantity) -> {
-            Product productFromInventory = productManager.getProductById(productInCart.getId());
-            if (productFromInventory.getAvailableQuantity() < requestedQuantity) {
-                throw new OutOfStockException("We don't have enough quantity of: " + productFromInventory.getName());
-            }
-        });
-
-        items.forEach((productInCart, requestedQuantity) -> {
-            Product productFromInventory = productManager.getProductById(productInCart.getId());
-            int quantityLeftOnStock = productFromInventory.getAvailableQuantity() - requestedQuantity;
-            productManager.updateStock(productFromInventory.getId(), quantityLeftOnStock);
+            productManager.decreaseStock(productInCart.getId(), requestedQuantity);
         });
 
         BigDecimal totalToPay = calculateFinalTotal();
-        this.activeDiscount = null;
         cart.clear();
 
         return totalToPay;
@@ -70,15 +57,13 @@ public class CartService {
     }
 
     public BigDecimal calculateBaseTotal() {
-        return cart.getItems().entrySet().stream()
-                .map(entry -> entry.getKey().getPrice().multiply(BigDecimal.valueOf(entry.getValue())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return cart.getTotalPrice();
     }
 
     public boolean applyPromoCode(String code) {
-        String upperCode = code.trim().toUpperCase();
-        if (promoCodes.containsKey(upperCode)) {
-            this.activeDiscount = promoCodes.get(upperCode);
+        DiscountStrategy foundStrategy = promoCodeService.getStrategyForPromoCode(code);
+        if (foundStrategy != null) {
+            cart.setDiscountStrategy(foundStrategy);
             return true;
         }
         return false;
@@ -86,10 +71,7 @@ public class CartService {
 
     public BigDecimal calculateFinalTotal() {
         BigDecimal baseTotal = calculateBaseTotal();
-        if (activeDiscount != null) {
-            return activeDiscount.applyDiscount(baseTotal);
-        }
-        return baseTotal;
+        return cart.getDiscountStrategy().applyDiscount(baseTotal);
     }
 
 }
